@@ -53,3 +53,46 @@ button:hover {
     font-weight: bold;
     color: #667eea;
 }
+
+/* Loader styles */
+#loader {
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 400ms ease, visibility 400ms;
+    opacity: 1;
+    visibility: visible;
+}
+
+#loader.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.loader-inner {
+    text-align: center;
+}
+
+.spinner {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 6px solid rgba(102,126,234,0.2);
+    border-top-color: #667eea;
+    animation: spin 3s linear infinite; /* rotation duration set to 3s */
+    margin: 0 auto 12px;
+}
+
+.loader-text {
+    color: #333;
+    font-weight: 600;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
