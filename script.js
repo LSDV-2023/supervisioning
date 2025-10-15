@@ -297,3 +297,22 @@ window.addEventListener('load', function() {
         }, 500);
     }, wait);
 });
+
+// Hide the loader after all resources are loaded, but keep it visible at least 3s
+window.addEventListener('load', function() {
+    const loader = document.getElementById('loader');
+    if (!loader) return;
+
+    const minDuration = 3000; // ms
+    const elapsed = Date.now() - _loaderStart;
+    const wait = Math.max(0, minDuration - elapsed);
+
+    setTimeout(() => {
+        // trigger fade-out
+        loader.classList.add('hidden');
+        // remove from DOM after CSS transition (400ms) + buffer
+        setTimeout(() => {
+            if (loader && loader.parentNode) loader.parentNode.removeChild(loader);
+        }, 500);
+    }, wait);
+});
