@@ -1,0 +1,80 @@
+stages:
+  - lint
+
+lint_frontend:
+  image: node:18
+  stage: lint
+  variables:
+    CI: "true"
+  script:
+    - echo "Simple frontend lint job: htmlhint, stylelint, eslint"
+    - node --version
+    - npm --version
+
+    # Install CLI tools for the job (no package.json required)
+    - npm install -g htmlhint stylelint stylelint-config-standard eslint
+
+    - echo "HTML files:"; git ls-files '*.html' || true
+    - echo "CSS files:"; git ls-files '*.css' || true
+    - echo "JS files:"; git ls-files '*.js' || true
+
+    - |
+      html_files=$(git ls-files '*.html' || true)
+      if [ -n "$html_files" ]; then
+        echo "Running htmlhint"
+        htmlhint $html_files
+      else
+        echo "No HTML files to lint"
+      fi
+
+    - |
+      css_files=$(git ls-files '*.css' || true)
+      if [ -n "$css_files" ]; then
+        if git ls-files --error-unmatch .stylelintrc* >/dev/null 2>&1; then
+          echo "Using repository stylelint config"
+          stylelint $css_files
+        else
+          echo "No stylelint config found — creating temporary config"
+          cat > .stylelintrc.tmp.json <<'JSON'
+          {
+            "extends": "stylelint-config-standard",
+            "rules": {}
+          }
+JSON
+          stylelint --config .stylelintrc.tmp.json $css_files
+          rm -f .stylelintrc.tmp.json
+        fi
+      else
+        echo "No CSS files to lint"
+      fi
+
+    - |
+      js_files=$(git ls-files '*.js' || true)
+      if [ -n "$js_files" ]; then
+        if git ls-files --error-unmatch .eslintrc* >/dev/null 2>&1; then
+          echo "Using repository ESLint config"
+          eslint $js_files
+        else
+          echo "No ESLint config found — creating temporary config"
+          cat > .eslintrc.tmp.json <<'JSON'
+          {
+            "root": true,
+            "env": { "browser": true, "node": true, "es2021": true },
+            "parserOptions": { "ecmaVersion": 12, "sourceType": "module" },
+            "rules": {
+              "no-unused-vars": "error",
+              "no-undef": "error",
+              "semi": ["error", "always"]
+            }
+          }
+JSON
+          eslint -c .eslintrc.tmp.json $js_files
+          rm -f .eslintrc.tmp.json
+        fi
+      else
+        echo "No JS files to lint"
+      fi
+
+  only:
+    - branches
+    - merge_requests
